@@ -24,6 +24,15 @@ const createN8nModel = () => {  // 반환 타입 제거
       };
 
       // n8n 웹훅으로 요청 전송
+      console.log("Sending request to n8n:", {
+        url: N8N_WEBHOOK_URL,
+        body: {
+          prompt: options.prompt,
+          messages: options.messages,
+          system: options.system,
+        },
+      });
+
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: {
@@ -36,6 +45,8 @@ const createN8nModel = () => {  // 반환 타입 제거
           system: options.system,
         }),
       });
+
+      console.log("n8n response status:", response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -137,6 +148,15 @@ const createN8nModel = () => {  // 반환 타입 제거
       };
 
       // n8n 웹훅으로 요청 전송
+      console.log("Sending request to n8n:", {
+        url: N8N_WEBHOOK_URL,
+        body: {
+          prompt: options.prompt,
+          messages: options.messages,
+          system: options.system,
+        },
+      });
+
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: {
@@ -149,6 +169,8 @@ const createN8nModel = () => {  // 반환 타입 제거
           system: options.system,
         }),
       });
+
+      console.log("n8n response status:", response.status);
 
       if (!response.ok) {
         const errorText = await response.text();

@@ -7,7 +7,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
-import { PlusIcon, TrashIcon } from "@/components/icons";
+import { Search } from "lucide-react";
+import { PlusIcon, TrashIcon, ChevronDownIcon } from "@/components/icons";
 import {
   getChatHistoryPaginationKey,
   SidebarHistory,
@@ -15,11 +16,21 @@ import {
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { Button } from "@/components/ui/button";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -33,12 +44,14 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
   const { mutate } = useSWRConfig();
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [isIntroOpen, setIsIntroOpen] = useState(false);
 
   const handleDeleteAll = () => {
     const deletePromise = fetch("/api/history", {
@@ -57,6 +70,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
     });
   };
 
+  const introMenuItems = [
+    { label: "공지사항", href: "/intro/announcements" },
+    { label: "동아리 소개", href: "/intro/about" },
+    { label: "가입/구성", href: "/intro/membership" },
+    { label: "회칙", href: "/intro/rules" },
+    { label: "연혁", href: "/intro/history" },
+    { label: "Possible Song", href: "/intro/song" },
+  ];
+
   return (
     <>
       <Sidebar className="group-data-[side=left]:border-r-0">
@@ -71,7 +93,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                  Chatbot
+                  Possible Connect
                 </span>
               </Link>
               <div className="flex flex-row gap-1">
@@ -116,6 +138,49 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/search" onClick={() => setOpenMobile(false)}>
+                  <Search size={16} />
+                  <span>회원검색</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <Collapsible open={isIntroOpen} onOpenChange={setIsIntroOpen}>
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton>
+                    <span>Intro</span>
+                    <ChevronDownIcon
+                      className={cn(
+                        "ml-auto transition-transform duration-200",
+                        isIntroOpen && "rotate-180"
+                      )}
+                      size={16}
+                    />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {introMenuItems.map((item) => (
+                      <SidebarMenuSubItem key={item.href}>
+                        <SidebarMenuSubButton asChild>
+                          <Link
+                            href={item.href}
+                            onClick={() => setOpenMobile(false)}
+                          >
+                            <span>{item.label}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          </SidebarMenu>
           <SidebarHistory user={user} />
         </SidebarContent>
         <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
