@@ -42,3 +42,7 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
+
+# Backup files
+backup.sql
+backup_utf8.sql

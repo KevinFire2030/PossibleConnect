@@ -142,7 +142,7 @@ _**Agent (model default, mode Ask)**_
 
 <tool-use data-tool-type="generic" data-tool-name="list_dir">
 <details>
-            <summary>Tool use: **list_directory** • Listed directory undefined • **0** results</summary>
+            <summary>Tool use: **list_dir** • Listed directory undefined • **0** results</summary>
         
 No results found
 </details>
@@ -7238,22 +7238,28 @@ _**User (2025-11-29 13:49Z)**_
 
 ---
 
-_**Agent (model default, mode Agent)**_
+_**Agent (model default, mode Ask)**_
 
 
 
 ---
 
 
+채팅 내역 저장 여부 확인 방법:
+
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_file">
-<details>
-<summary>Tool use: **read_file**</summary>
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: package.json</summary>
 
-Status: **loading**
+</details>
+</tool-use>
 
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: lib/db/schema.ts</summary>
 
 </details>
 </tool-use>
@@ -7265,10 +7271,99 @@ Status: **loading**
 ---
 
 
+채팅 내역 확인 방법:
 
----
+## 방법 1: Drizzle Studio 사용 (권장)
 
+프로젝트에 Drizzle Studio가 설정되어 있습니다:
 
+```bash
+pnpm db:studio
+```
+
+이 명령어를 실행하면:
+- 브라우저에서 `http://localhost:4983` (또는 다른 포트)가 자동으로 열립니다
+- GUI에서 데이터베이스 테이블을 확인할 수 있습니다
+- `User`, `Chat`, `Message_v2` 테이블을 확인할 수 있습니다
+
+## 방법 2: psql로 직접 확인
+
+Docker PostgreSQL 컨테이너에 접속:
+
+```bash
+docker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d ai_chatbot
+```
+
+### 유용한 SQL 쿼리
+
+#### 1. 모든 채팅 목록 확인
+```sql
+SELECT id, "createdAt", title, "userId" FROM "Chat" ORDER BY "createdAt" DESC LIMIT 10;
+```
+
+#### 2. 특정 채팅의 메시지 확인
+```sql
+SELECT id, "chatId", role, parts, "createdAt" 
+FROM "Message_v2" 
+WHERE "chatId" = 'your-chat-id-here'
+ORDER BY "createdAt" ASC;
+```
+
+#### 3. 최근 메시지 확인
+```sql
+SELECT m.id, m."chatId", m.role, m.parts, m."createdAt", c.title
+FROM "Message_v2" m
+JOIN "Chat" c ON m."chatId" = c.id
+ORDER BY m."createdAt" DESC
+LIMIT 20;
+```
+
+#### 4. 사용자별 채팅 수 확인
+```sql
+SELECT u.email, COUNT(c.id) as chat_count
+FROM "User" u
+LEFT JOIN "Chat" c ON u.id = c."userId"
+GROUP BY u.id, u.email;
+```
+
+#### 5. 테이블별 레코드 수 확인
+```sql
+SELECT 
+  (SELECT COUNT(*) FROM "User") as users,
+  (SELECT COUNT(*) FROM "Chat") as chats,
+  (SELECT COUNT(*) FROM "Message_v2") as messages;
+```
+
+## 방법 3: 간단한 확인 쿼리 (한 줄)
+
+```bash
+docker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d ai_chatbot -c "SELECT COUNT(*) as total_chats FROM \"Chat\";"
+```
+
+또는
+
+```bash
+docker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d ai_chatbot -c "SELECT COUNT(*) as total_messages FROM \"Message_v2\";"
+```
+
+## 빠른 확인 명령어
+
+```bash
+# 채팅 수 확인
+docker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d ai_chatbot -c "SELECT COUNT(*) FROM \"Chat\";"
+
+# 메시지 수 확인
+docker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d ai_chatbot -c "SELECT COUNT(*) FROM \"Message_v2\";"
+
+# 최근 채팅 5개 확인
+docker exec -it self-hosted-ai-starter-kit-postgres-1 psql -U root -d ai_chatbot -c "SELECT id, title, \"createdAt\" FROM \"Chat\" ORDER BY \"createdAt\" DESC LIMIT 5;"
+```
+
+## 권장 방법
+
+가장 쉬운 방법은 `pnpm db:studio`를 사용하는 것입니다. GUI에서 테이블과 데이터를 확인할 수 있습니다.
+
+어떤 방법을 사용하시겠어요?
 
 ---
 
